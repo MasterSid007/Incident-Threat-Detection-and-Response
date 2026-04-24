@@ -1,0 +1,80 @@
+# ITDR Security Rules Configuration
+# Defines dynamic threat hunting rules evaluated by the Rule Engine.
+
+rules:
+  - name: "Password Spray"
+    description: "Multiple failed logins from same IP across multiple user accounts."
+    severity: "Critical"
+    mitre_id: "T1110.003"
+    handler: "detect_password_spray"
+    enabled: true
+    params:
+      time_window_min: 5
+      fail_threshold: 5
+      min_unique_users: 3
+
+  - name: "Suspicious User Agent"
+    description: "Logins from known attack tools or headless browsers."
+    severity: "Medium"
+    mitre_id: "T1071.001"
+    handler: "detect_suspicious_user_agent"
+    enabled: true
+    params: {}
+
+  - name: "Bulk Download"
+    description: "Unusual mass data exfiltration attempts by a single user."
+    severity: "High"
+    mitre_id: "T1039"
+    handler: "detect_bulk_operations"
+    enabled: true
+    params:
+      threshold: 5
+      window_min: 10
+
+  - name: "Impossible Travel"
+    description: "Logins from geographically impossible locations or highly suspicious jumps."
+    severity: "Dynamic"
+    mitre_id: "T1078.004"
+    handler: "detect_impossible_travel"
+    enabled: true
+    params:
+      max_travel_hours: 2.0
+
+  - name: "Token Theft"
+    description: "Session tokens used from substantially different IPs indicating theft."
+    severity: "Critical"
+    mitre_id: "T1550.003"
+    handler: "detect_token_theft"
+    enabled: true
+    params:
+      session_window_min: 60
+
+  - name: "Privilege Escalation"
+    description: "Role assignment immediately followed by suspicious administrative action."
+    severity: "Critical"
+    mitre_id: "T1078"
+    handler: "detect_privilege_escalation"
+    enabled: true
+    params:
+      follow_up_window_min: 30
+
+  - name: "Suspicious IP"
+    description: "IP addresses demonstrating high aggregate failure rates across the system."
+    severity: "Dynamic"
+    mitre_id: "T1078.001"
+    handler: "detect_suspicious_ip"
+    enabled: true
+    params:
+      min_events: 5
+      failure_rate_threshold: 0.5
+      min_users_threshold: 3
+
+  - name: "High-Risk ASN"
+    description: "Autonomous System Networks associated almost entirely with failed auth events."
+    severity: "Dynamic"
+    mitre_id: "T1078.001"
+    handler: "detect_high_risk_asn"
+    enabled: true
+    params:
+      min_events: 10
+      failure_rate_threshold: 0.5

@@ -1,0 +1,62 @@
+# ITDR Configuration
+# Central configuration file for all detection parameters
+
+# Data Generation
+simulation:
+  num_users: 50
+  duration_hours: 8
+  events_per_user_per_hour: 5
+
+# Detection Rules
+rules:
+  password_spray:
+    time_window_minutes: 5
+    fail_threshold: 5
+    min_unique_users: 3
+  
+  impossible_travel:
+    max_travel_time_hours: 2.0
+    # Countries that are typically distant
+    high_risk_countries: ["RU", "CN", "KP", "IR"]
+  
+  token_theft:
+    session_ip_change_window_minutes: 60
+    suspicious_user_agents: ["curl", "wget", "python-requests", "Headless"]
+  
+  privilege_escalation:
+    high_risk_event_types: ["RoleAssigned", "AdminAction", "BulkDownload"]
+    time_after_role_change_minutes: 30
+
+# ML Models
+ml:
+  isolation_forest:
+    contamination: 0.05
+    n_estimators: 100
+  
+  autoencoder:
+    encoding_dim: 8
+    epochs: 50
+    learning_rate: 0.001
+    threshold_percentile: 95
+
+# Risk Scoring
+scoring:
+  threshold_high: 80
+  threshold_medium: 50
+  threshold_low: 20
+  
+  severity_scores:
+    critical: 100
+    high: 80
+    medium: 60
+    low: 30
+  
+  # Weight for combining ML and Rule scores
+  ml_weight: 0.4
+  rule_weight: 0.6
+
+# Dashboard
+dashboard:
+  refresh_interval_seconds: 30
+  default_time_range_hours: 24
+  max_alerts_displayed: 100
