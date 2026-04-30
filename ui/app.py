@@ -380,6 +380,171 @@ st.markdown(f"""
 # ═══════════════════════════════════════════════════════════
 # DATA PIPELINE (cached)
 # ═══════════════════════════════════════════════════════════
+def _paper_comparison_metrics():
+    """Capstone-paper summary metrics used for demo mode and README figures."""
+    return [
+        {
+            "approach": "Rules-Only",
+            "accuracy": 0.536,
+            "precision": 0.148,
+            "recall": 0.765,
+            "f1_score": 0.248,
+            "fpr": 0.499,
+        },
+        {
+            "approach": "ML Behavioral",
+            "accuracy": 0.954,
+            "precision": 0.735,
+            "recall": 0.857,
+            "f1_score": 0.791,
+            "fpr": 0.035,
+        },
+        {
+            "approach": "Combined",
+            "accuracy": 0.525,
+            "precision": 0.178,
+            "recall": 0.946,
+            "f1_score": 0.299,
+            "fpr": 0.526,
+        },
+    ]
+
+
+def _build_demo_pipeline(critical_t=70, high_t=50):
+    """
+    Build a deterministic demo dataset so the dashboard works in a fresh clone.
+
+    The real end-to-end path still runs when rba-dataset.csv and saved model
+    artifacts are present. This fallback uses the capstone-paper confusion
+    counts and is clearly labeled in the UI.
+    """
+    rng = np.random.default_rng(584)
+
+    # Counts chosen to round to 95.4% accuracy, 73.5% precision, and 3.5% FPR.
+    tp_count, fp_count, fn_count, tn_count = 4362, 1573, 729, 43336
+    y_true = np.concatenate([
+        np.ones(tp_count, dtype=int),
+        np.zeros(fp_count, dtype=int),
+        np.ones(fn_count, dtype=int),
+        np.zeros(tn_count, dtype=int),
+    ])
+    y_pred = np.concatenate([
+        np.ones(tp_count, dtype=int),
+        np.ones(fp_count, dtype=int),
+        np.zeros(fn_count, dtype=int),
+        np.zeros(tn_count, dtype=int),
+    ])
+
+    order = rng.permutation(len(y_true))
+    y_true = y_true[order]
+    y_pred = y_pred[order]
+
+    timestamps = pd.date_range("2020-02-05 00:00:00", periods=len(y_true), freq="2s")
+    users = np.array([f"user{idx:04d}@example.com" for idx in rng.integers(1, 1400, len(y_true))])
+    countries = rng.choice(
+        ["US", "NO", "PL", "BR", "GB", "DE", "IN", "IE"],
+        size=len(y_true),
+        p=[0.34, 0.22, 0.12, 0.09, 0.08, 0.06, 0.05, 0.04],
+    )
+    ips = np.array([
+        f"203.0.{a}.{b}"
+        for a, b in zip(rng.integers(1, 255, len(y_true)), rng.integers(1, 255, len(y_true)))
+    ])
+
+    attack_labels = rng.choice(
+        ["Password Spray", "Impossible Travel", "Token Theft", "Privilege Escalation", "Suspicious IP"],
+        size=len(y_true),
+        p=[0.36, 0.24, 0.18, 0.12, 0.10],
+    )
+    attack_type = np.where(y_true == 1, attack_labels, "Normal")
+
+    probabilities = np.zeros(len(y_true), dtype=float)
+    probabilities[(y_true == 1) & (y_pred == 1)] = rng.uniform(
+        0.72, 0.99, ((y_true == 1) & (y_pred == 1)).sum()
+    )
+    probabilities[(y_true == 0) & (y_pred == 1)] = rng.uniform(
+        0.70, 0.91, ((y_true == 0) & (y_pred == 1)).sum()
+    )
+    probabilities[(y_true == 1) & (y_pred == 0)] = rng.uniform(
+        0.31, 0.49, ((y_true == 1) & (y_pred == 0)).sum()
+    )
+    probabilities[(y_true == 0) & (y_pred == 0)] = rng.uniform(
+        0.01, 0.29, ((y_true == 0) & (y_pred == 0)).sum()
+    )
+
+    df = pd.DataFrame({
+        "timestamp": timestamps,
+        "upn": users,
+        "ip": ips,
+        "country": countries,
+        "eventType": np.where(y_true == 1, "UserLoggedIn", "UserLogin"),
+        "status": np.where((y_true == 1) & (rng.random(len(y_true)) < 0.38), "Failure", "Success"),
+        "appName": rng.choice(["Office 365", "AWS Console", "Okta", "Azure Portal"], size=len(y_true)),
+        "browser": rng.choice(["Chrome", "Edge", "Firefox", "Safari"], size=len(y_true)),
+        "os": rng.choice(["Windows", "macOS", "Linux", "iOS", "Android"], size=len(y_true)),
+        "asn": rng.integers(1000, 65000, len(y_true)),
+        "is_attack": y_true.astype(bool),
+        "attack_type": attack_type,
+        "predicted_attack": y_pred,
+        "attack_probability": probabilities,
+        "final_risk_score": (probabilities * 100).round(1),
+        "ml_risk": (probabilities * 100).round(1),
+        "rule_risk": 0,
+        "rule_details": "",
+    })
+
+    df["risk_level"] = df["final_risk_score"].apply(
+        lambda x: "Critical" if x >= critical_t else ("High" if x >= high_t else ("Medium" if x >= 30 else "Low"))
+    )
+    df["mitre_id"] = df["attack_type"].apply(
+        lambda x: (get_mitre_for_attack_type(str(x)) or {}).get("id", "") if x != "Normal" else ""
+    )
+    df["top_signals"] = np.where(
+        df["predicted_attack"].astype(bool),
+        "ip_attack_rate, user_fail_rate, hour_deviation",
+        "No high-risk signal",
+    )
+    df["rationale"] = np.where(
+        df["predicted_attack"].astype(bool),
+        "ML ensemble flagged anomalous identity behavior.",
+        "Below detection threshold.",
+    )
+    df.attrs["demo_mode"] = True
+
+    feature_importance = pd.DataFrame({
+        "Feature": [
+            "ip_attack_rate", "asn_attack_rate", "country_attack_rate", "user_fail_rate",
+            "hour_deviation", "ip_sharing_score", "is_failure", "is_new_device",
+            "country_freq", "browser_freq",
+        ],
+        "Importance": [0.19, 0.14, 0.12, 0.11, 0.10, 0.09, 0.08, 0.07, 0.05, 0.05],
+    })
+
+    rule_alerts = []
+    rules = ["Password Spray", "Impossible Travel", "Token Theft", "Privilege Escalation", "Suspicious IP"] * 4
+    for idx, rule in enumerate(rules):
+        entity_type = "ip" if rule in ("Password Spray", "Suspicious IP") else "user"
+        entity = str(df.iloc[idx]["ip"] if entity_type == "ip" else df.iloc[idx]["upn"])
+        rule_alerts.append({
+            "rule": rule,
+            "severity": "Critical" if idx % 3 == 0 else "High",
+            "entity": entity,
+            "entity_type": entity_type,
+            "mitre_id": (get_mitre_for_attack_type(rule) or {}).get("id", ""),
+        })
+
+    metrics = {
+        "accuracy": 0.954,
+        "feature_importance": feature_importance,
+        "comparison": _paper_comparison_metrics(),
+        "attack_probabilities": probabilities,
+        "y_true": y_true,
+        "dataset_mode": "demo",
+    }
+
+    return df, metrics, rule_alerts
+
+
 @st.cache_data(show_spinner="Initializing detection pipeline...")
 def run_pipeline(critical_t=70, high_t=50):
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -389,7 +554,7 @@ def run_pipeline(critical_t=70, high_t=50):
     try:
         df = loader.load_to_dataframe(nrows=200000)
     except FileNotFoundError:
-        return None, None, None
+        return _build_demo_pipeline(critical_t, high_t)
 
     metadata_path = os.path.join(script_dir, "..", "saved_models", "split_metadata.json")
     try:
@@ -398,7 +563,7 @@ def run_pipeline(critical_t=70, high_t=50):
         split_date = pd.Timestamp(split_meta['split_date'])
         df = df[df['timestamp'] >= split_date].copy()
         if df.empty:
-            return None, None, None
+            return _build_demo_pipeline(critical_t, high_t)
         if len(df) > 50000:
             df = df.head(50000)
     except FileNotFoundError:
@@ -416,7 +581,7 @@ def run_pipeline(critical_t=70, high_t=50):
         classifier = SupervisedAttackClassifier()
         classifier.load_model(model_path)
     except FileNotFoundError:
-        return None, None, None
+        return _build_demo_pipeline(critical_t, high_t)
 
     X = extractor.transform(df)
     supervised_results = classifier.predict(X)
@@ -586,6 +751,13 @@ if result is None or result[0] is None:
     st.stop()
 
 df, metrics, rule_alerts = result
+
+if metrics.get("dataset_mode") == "demo":
+    st.info(
+        "Demo mode: committed RBA dataset/model artifacts are not included, so this view uses "
+        "deterministic capstone-summary data. Add rba-dataset.csv and saved_models/ to run "
+        "the full training/evaluation pipeline."
+    )
 
 # Pre-compute common values
 total_events = len(df)

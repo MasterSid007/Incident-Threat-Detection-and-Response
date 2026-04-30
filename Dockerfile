@@ -1,7 +1,7 @@
 # ITDR Prototype - Docker Image
 # Multi-stage build for smaller final image
 
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
@@ -19,6 +19,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy installed packages from builder
 COPY --from=builder /root/.local /root/.local
 
@@ -27,9 +31,6 @@ ENV PATH=/root/.local/bin:$PATH
 
 # Copy application code
 COPY . .
-
-# Generate sample data on build (optional, can be done at runtime)
-RUN python generate_data.py
 
 # Expose Streamlit port
 EXPOSE 8501

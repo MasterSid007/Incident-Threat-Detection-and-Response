@@ -1,0 +1,42 @@
+{
+  "dataset": {
+    "name": "RBA authentication dataset",
+    "events_used": 200000,
+    "split": "temporal",
+    "train_window": "2020-02-03 to 2020-02-04",
+    "test_window": "2020-02-05 onward",
+    "note": "Feature extraction and threshold tuning were fit on training data only to avoid temporal leakage."
+  },
+  "approaches": [
+    {
+      "approach": "Rules-Only",
+      "accuracy": 0.536,
+      "precision": 0.148,
+      "recall": 0.765,
+      "f1_score": 0.248,
+      "fpr": 0.499
+    },
+    {
+      "approach": "ML Behavioral",
+      "accuracy": 0.954,
+      "precision": 0.735,
+      "recall": 0.857,
+      "f1_score": 0.791,
+      "fpr": 0.035
+    },
+    {
+      "approach": "Combined",
+      "accuracy": 0.525,
+      "precision": 0.178,
+      "recall": 0.946,
+      "f1_score": 0.299,
+      "fpr": 0.526
+    }
+  ],
+  "headline": {
+    "accuracy": 0.954,
+    "precision": 0.735,
+    "fpr_reduction_factor": 14.257,
+    "fpr_absolute_reduction": 0.464
+  }
+}
