@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITDR Final Prototype — IST 584 Capstone</title>
+<meta name="description" content="Final prototype showcase for the Continuous Identity Threat Detection and Response system. IST 584 Capstone Project.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e17;--bg2:#111827;--bg3:#1a2332;
+  --border:#1e293b;--accent:#0ea5e9;--accent2:#6366f1;
+  --text:#e2e8f0;--text2:#94a3b8;--muted:#64748b;
+  --critical:#ef4444;--success:#10b981;--high:#f97316;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  line-height:1.6;
+}
+.hero{
+  text-align:center;padding:80px 24px 60px;
+  background:linear-gradient(180deg,#0f172a 0%,var(--bg) 100%);
+  border-bottom:1px solid var(--border);
+}
+.hero-badge{
+  display:inline-block;padding:6px 16px;border-radius:20px;
+  background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.3);
+  color:var(--accent);font-size:0.78rem;font-weight:600;
+  letter-spacing:0.05em;text-transform:uppercase;margin-bottom:20px;
+}
+.hero h1{
+  font-size:clamp(2rem,5vw,3.2rem);font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:16px;letter-spacing:-0.03em;
+}
+.hero p{color:var(--text2);font-size:1.05rem;max-width:700px;margin:0 auto 30px}
+.hero-stats{
+  display:flex;justify-content:center;gap:40px;flex-wrap:wrap;margin-top:30px;
+}
+.hero-stat{text-align:center}
+.hero-stat-val{
+  font-size:1.8rem;font-weight:700;color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+}
+.hero-stat-label{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+/* Architecture strip */
+.arch-strip{
+  padding:50px 24px;border-bottom:1px solid var(--border);
+  background:var(--bg2);
+}
+.arch-strip h2{text-align:center;font-size:1.3rem;margin-bottom:8px;color:var(--text)}
+.arch-strip .sub{text-align:center;color:var(--muted);font-size:0.85rem;margin-bottom:30px}
+.arch-flow{
+  display:flex;align-items:center;justify-content:center;
+  flex-wrap:wrap;gap:0;max-width:1100px;margin:0 auto;
+}
+.arch-node{
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  padding:14px 18px;text-align:center;min-width:130px;
+  transition:border-color 0.2s,transform 0.2s;
+}
+.arch-node:hover{border-color:var(--accent);transform:translateY(-3px)}
+.arch-icon{font-size:1.4rem;margin-bottom:4px}
+.arch-label{font-size:0.75rem;font-weight:600;color:var(--text)}
+.arch-desc{font-size:0.65rem;color:var(--muted);margin-top:2px}
+.arch-arrow{color:var(--accent);font-size:1.2rem;padding:0 8px;opacity:0.5}
+
+/* Tech badges */
+.tech-row{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:28px;
+}
+.tech-badge{
+  padding:5px 14px;border-radius:6px;font-size:0.72rem;font-weight:500;
+  background:rgba(14,165,233,0.08);border:1px solid rgba(14,165,233,0.2);
+  color:var(--accent);
+}
+
+/* Sections */
+.section{
+  padding:60px 0;border-bottom:1px solid var(--border);
+}
+.section:last-child{border-bottom:none}
+.section-num{
+  display:inline-block;width:36px;height:36px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-weight:700;font-size:0.9rem;
+  line-height:36px;text-align:center;margin-bottom:14px;
+}
+.section h2{font-size:1.5rem;font-weight:700;margin-bottom:6px;color:var(--text)}
+.section-rubric{
+  display:inline-block;padding:4px 12px;border-radius:4px;
+  background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);
+  color:var(--accent2);font-size:0.7rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.04em;margin-bottom:20px;
+}
+.screenshot-wrap{
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  margin-bottom:20px;background:var(--bg2);
+  transition:border-color 0.3s,box-shadow 0.3s;
+}
+.screenshot-wrap:hover{
+  border-color:var(--accent);box-shadow:0 0 30px rgba(14,165,233,0.08);
+}
+.screenshot-wrap img{width:100%;display:block}
+.screenshot-caption{
+  padding:10px 16px;font-size:0.78rem;color:var(--muted);
+  border-top:1px solid var(--border);text-align:center;
+  font-style:italic;
+}
+.feature-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:768px){.feature-list{grid-template-columns:1fr}}
+.feature-list li{
+  padding:10px 14px;border-radius:8px;background:var(--bg2);
+  border:1px solid var(--border);font-size:0.82rem;color:var(--text2);
+  line-height:1.5;
+}
+.feature-list li::before{content:"→ ";color:var(--accent);font-weight:600}
+
+/* Footer */
+.footer{
+  text-align:center;padding:40px 24px;border-top:1px solid var(--border);
+  color:var(--muted);font-size:0.78rem;
+}
+.footer a{color:var(--accent);text-decoration:none}
+
+/* Nav */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,14,23,0.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:10px 0;
+}
+.nav-inner{
+  max-width:1200px;margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{font-weight:700;color:var(--text);font-size:0.95rem;display:flex;align-items:center;gap:8px}
+.nav-links{display:flex;gap:4px;flex-wrap:wrap}
+.nav-links a{
+  color:var(--muted);text-decoration:none;font-size:0.72rem;
+  padding:5px 10px;border-radius:6px;transition:all 0.2s;
+  font-weight:500;
+}
+.nav-links a:hover{color:var(--accent);background:rgba(14,165,233,0.1)}
+
+/* Summary cards */
+.summary-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:16px;margin-top:40px;
+}
+.summary-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:20px;
+}
+.summary-card h3{font-size:0.85rem;font-weight:600;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em}
+.summary-card p{font-size:0.82rem;color:var(--text2);line-height:1.6}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">🛡️ ITDR Prototype</div>
+    <div class="nav-links">
+      <a href="#metrics">SOC Dashboard</a>
+      <a href="#overview">Threat Activity Timeline & Detection Outcome</a>
+      <a href="#alerts">Alerts & Automated Response Engine</a>
+      <a href="#detection">Detection Analytics & MITRE ATT&CK Coverage</a>
+      <a href="#model">Model Performance & ML Evaluation</a>
+      <a href="#research">Research Findings & Development Roadmap</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">IST 584 · Capstone Project · Week 15 Final Prototype</div>
+  <h1>Continuous Identity Threat Detection &amp; Response</h1>
+  <p>A machine learning–powered Security Operations Center prototype that detects identity-based attacks in real time using behavioral analytics, rule-based detection, and MITRE ATT&amp;CK enrichment.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-val">95.2%</div><div class="hero-stat-label">Accuracy</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">79.1%</div><div class="hero-stat-label">F1 Score</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">50,000</div><div class="hero-stat-label">Events Tested</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">8</div><div class="hero-stat-label">MITRE Techniques</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">4,109</div><div class="hero-stat-label">Response Actions</div></div>
+  </div>
+</div>
+
+<div class="arch-strip">
+  <h2>System Architecture</h2>
+  <div class="sub">End-to-end pipeline from raw authentication logs to automated incident response</div>
+  <div class="arch-flow">
+    <div class="arch-node"><div class="arch-icon">📥</div><div class="arch-label">ETL Pipeline</div><div class="arch-desc">9GB RBA Dataset</div></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node"><div class="arch-icon">🔬</div><div class="arch-label">Feature Engine</div><div class="arch-desc">24 Behavioral Features</div></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node" style="border-color:var(--accent)"><div class="arch-icon">🤖</div><div class="arch-label">ML Ensemble</div><div class="arch-desc">RF + HistGBT</div></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node"><div class="arch-icon">📜</div><div class="arch-label">Rule Engine</div><div class="arch-desc">7 Detection Rules</div></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node"><div class="arch-icon">🎯</div><div class="arch-label">MITRE Mapping</div><div class="arch-desc">ATT&amp;CK Taxonomy</div></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node" style="border-color:var(--critical)"><div class="arch-icon">🚨</div><div class="arch-label">Alert Console</div><div class="arch-desc">Risk Scoring</div></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node" style="border-color:var(--success)"><div class="arch-icon">🛡️</div><div class="arch-label">Auto-Response</div><div class="arch-desc">Playbook Actions</div></div>
+  </div>
+  <div class="tech-row">
+    <span class="tech-badge">Python 3.10+</span>
+    <span class="tech-badge">scikit-learn</span>
+    <span class="tech-badge">Streamlit</span>
+    <span class="tech-badge">Plotly</span>
+    <span class="tech-badge">Pandas</span>
+    <span class="tech-badge">Docker</span>
+    <span class="tech-badge">MITRE ATT&amp;CK</span>
+    <span class="tech-badge">PyTorch (Autoencoder)</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="section" id="metrics">
+    <div class="section-num">1</div>
+    <h2>SOC Dashboard — Key Performance Metrics</h2>
+    <div class="section-rubric">📋 Completeness — All major detection, scoring, and response features are implemented and visible.</div>
+    <div class="screenshot-wrap">
+      <img src="images/dashboard_metrics.png" alt="Full SOC dashboard header with 8 real-time KPI cards and 5-tab navigation" loading="lazy">
+      <div class="screenshot-caption">Full SOC dashboard header with 8 real-time KPI cards and 5-tab navigation</div>
+    </div>
+    <ul class="feature-list">
+      <li><strong>50,000 events</strong> analyzed from a held-out test set (Feb 5–6, 2020)</li>
+      <li><strong>4,146 critical alerts</strong> flagged (8.3% of all events)</li>
+      <li><strong>1,427 unique users</strong> impacted across the test window</li>
+      <li><strong>Precision 73.5%</strong> · <strong>Recall 85.7%</strong> · <strong>F1 79.1%</strong> · <strong>Accuracy 95.2%</strong></li>
+      <li>Ensemble classifier (Random Forest + HistGradientBoosting) with precision-targeted threshold</li>
+      <li>ML Engine and Rule Engine status indicators confirm both subsystems are online</li>
+    </ul>
+  </div>
+
+  <div class="section" id="overview">
+    <div class="section-num">2</div>
+    <h2>Threat Activity Timeline & Detection Outcome</h2>
+    <div class="section-rubric">📋 Functionality — Clear evidence the system processes data and produces meaningful visual outputs.</div>
+    <div class="screenshot-wrap">
+      <img src="images/dashboard_overview.png" alt="Overview tab: real-time threat timeline, detection donut, hourly patterns, geo-distribution, attack breakdown" loading="lazy">
+      <div class="screenshot-caption">Overview tab: real-time threat timeline, detection donut, hourly patterns, geo-distribution, attack breakdown</div>
+    </div>
+    <ul class="feature-list">
+      <li><strong>Threat Activity Timeline</strong> — stacked area chart showing normal traffic vs. detected threats over time</li>
+      <li><strong>Detection Outcome donut</strong> — TP/TN/FP/FN distribution with 95.2% accuracy center label</li>
+      <li><strong>Hourly Activity Pattern</strong> — reveals attack concentration during off-hours</li>
+      <li><strong>Top Access Countries</strong> — geographic distribution of authentication events (NO, US, PL, BR, etc.)</li>
+      <li><strong>Attack Detection by Type</strong> — overlay chart comparing total vs. detected attacks per category</li>
+      <li>Sidebar controls: Live Streaming toggle, configurable Critical/High thresholds, version changelog</li>
+    </ul>
+  </div>
+
+  <div class="section" id="alerts">
+    <div class="section-num">3</div>
+    <h2>Alerts & Automated Response Engine</h2>
+    <div class="section-rubric">📋 AI & Security Integration — ML detection, MITRE mapping, and automated response work together end-to-end.</div>
+    <div class="screenshot-wrap">
+      <img src="images/dashboard_alerts.png" alt="Alerts tab: priority alert queue with MITRE IDs, risk scores, and automated response playbook actions" loading="lazy">
+      <div class="screenshot-caption">Alerts tab: priority alert queue with MITRE IDs, risk scores, and automated response playbook actions</div>
+    </div>
+    <ul class="feature-list">
+      <li><strong>Priority Alerts table</strong> — sortable by time, user, risk score, severity, MITRE ID, and ML rationale</li>
+      <li><strong>Risk Score progress bars</strong> — visual 0–100 scoring with color-coded severity levels</li>
+      <li><strong>MITRE ATT&CK enrichment</strong> — each alert tagged with technique IDs (e.g., T1090, T1110.003)</li>
+      <li><strong>ML Explainability</strong> — per-alert rationale column explains why the ML model flagged each event</li>
+      <li><strong>4,109 automated response actions</strong> simulated: Block IP, Force Password Reset, Notify SOC, etc.</li>
+      <li><strong>Severity-based playbooks</strong> — Critical alerts trigger account quarantine + session revocation</li>
+    </ul>
+  </div>
+
+  <div class="section" id="detection">
+    <div class="section-num">4</div>
+    <h2>Detection Analytics & MITRE ATT&CK Coverage</h2>
+    <div class="section-rubric">📋 AI & Security Integration — Industry-standard MITRE ATT&CK taxonomy mapped to every detection rule.</div>
+    <div class="screenshot-wrap">
+      <img src="images/dashboard_detection.png" alt="Detection Analytics tab: MITRE ATT&CK coverage matrix, per-attack-type metrics, tactic distribution" loading="lazy">
+      <div class="screenshot-caption">Detection Analytics tab: MITRE ATT&CK coverage matrix, per-attack-type metrics, tactic distribution</div>
+    </div>
+    <ul class="feature-list">
+      <li><strong>MITRE ATT&CK Coverage Matrix</strong> — 8 techniques mapped across 6 tactics</li>
+      <li>Techniques covered: T1110.003 (Password Spraying), T1078 (Valid Accounts), T1528 (Token Theft), T1098 (Account Manipulation), T1059 (Scripting), T1530 (Cloud Storage), T1090 (Proxy)</li>
+      <li><strong>Detection by Attack Type</strong> — Attacker IP: 5,355 total, 4,591 detected (85.7% rate)</li>
+      <li><strong>Tactic Distribution pie chart</strong> — Credential Access 25%, Command and Control 25%, Defense Evasion 25%, etc.</li>
+      <li><strong>System Architecture</strong> expandable — shows full ETL → Feature Engine → ML Ensemble → Risk Scoring → Alert → Response pipeline</li>
+      <li>7 rule-based detections complementing the ML ensemble for defense-in-depth coverage</li>
+    </ul>
+  </div>
+
+  <div class="section" id="model">
+    <div class="section-num">5</div>
+    <h2>Model Performance & ML Evaluation</h2>
+    <div class="section-rubric">📋 Completeness — Full ML evaluation pipeline with explainable, reproducible metrics.</div>
+    <div class="screenshot-wrap">
+      <img src="images/dashboard_model.png" alt="Model Performance tab: confusion matrix, detection breakdown, top features, precision-recall tradeoff" loading="lazy">
+      <div class="screenshot-caption">Model Performance tab: confusion matrix, detection breakdown, top features, precision-recall tradeoff</div>
+    </div>
+    <ul class="feature-list">
+      <li><strong>Confusion Matrix</strong> — TN: 42,988 | FP: 1,657 | FN: 764 | TP: 4,591</li>
+      <li><strong>Detection Breakdown</strong> — horizontal bar chart showing class-level performance</li>
+      <li><strong>Top 10 Features</strong> — ip_attack_rate, asn_attack_rate, country_attack_rate lead importance rankings</li>
+      <li><strong>24 behavioral features</strong> extracted per event (IP frequency, ASN patterns, geo-velocity, session behavior)</li>
+      <li><strong>Precision-Recall Tradeoff curve</strong> — interactive threshold tuning from 5–100, showing optimal operating point</li>
+      <li>Temporal train/test split (Feb 3–4 train, Feb 5–6 test) prevents data leakage — a key methodological safeguard</li>
+    </ul>
+  </div>
+
+  <div class="section" id="research">
+    <div class="section-num">6</div>
+    <h2>Research Findings & Development Roadmap</h2>
+    <div class="section-rubric">📋 Overall Effort — Rigorous empirical comparison answers the research question with quantitative evidence.</div>
+    <div class="screenshot-wrap">
+      <img src="images/dashboard_research.png" alt="Research tab: comparative analysis (Rules vs ML vs Combined), key findings, and project roadmap" loading="lazy">
+      <div class="screenshot-caption">Research tab: comparative analysis (Rules vs ML vs Combined), key findings, and project roadmap</div>
+    </div>
+    <ul class="feature-list">
+      <li><strong>Research Question</strong>: How effective is behavioral ML-based detection compared to rule-based baselines?</li>
+      <li><strong>Rules-Only</strong>: Precision 15.4%, Recall 77.6%, F1 25.7% — high recall but excessive false positives (51.1% FPR)</li>
+      <li><strong>ML Behavioral</strong>: Precision 73.5%, Recall 85.7%, F1 79.1% — best overall balance with only 3.7% FPR</li>
+      <li><strong>Combined</strong>: Precision 17.8%, Recall 94.6%, F1 29.9% — maximizes recall but degrades precision</li>
+      <li><strong>Key Finding</strong>: ML Behavioral achieves the highest F1 score at 79.1%, validating the ML-first approach</li>
+      <li><strong>Roadmap</strong>: 8 completed milestones (v2.0) + 8 planned features (v3.0) including SIEM integration and UEBA profiling</li>
+    </ul>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <h3>🧠 AI Components</h3>
+      <p>Ensemble ML classifier (Random Forest + HistGradientBoosting) with precision-targeted threshold optimization. 24 behavioral features extracted per event. Per-alert ML explainability showing top contributing signals. Autoencoder and Isolation Forest anomaly detectors available.</p>
+    </div>
+    <div class="summary-card">
+      <h3>🔒 Security Components</h3>
+      <p>7 rule-based detections (Password Spray, Impossible Travel, Token Theft, Privilege Escalation, Suspicious User Agent, Bulk Download, Suspicious IP). MITRE ATT&amp;CK mapping across 8 techniques and 6 tactics. Automated response playbooks with severity-based escalation.</p>
+    </div>
+    <div class="summary-card">
+      <h3>📊 Data Pipeline</h3>
+      <p>9GB RBA authentication dataset. Temporal train/test split (Feb 3–4 train, Feb 5–6 test) prevents data leakage. Live streaming simulation processes events in real-time batches through the full ML pipeline. Dockerized deployment with docker-compose.</p>
+    </div>
+    <div class="summary-card">
+      <h3>🔬 Research Contribution</h3>
+      <p>Empirical comparison of Rules-Only (F1: 25.7%), ML Behavioral (F1: 79.1%), and Combined (F1: 29.9%) approaches. ML Behavioral achieves 3× the F1 score of rule-based baselines while reducing false positive rate from 51.1% to 3.7%.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p><strong>IST 584 Capstone — Continuous Identity Threat Detection &amp; Response</strong></p>
+  <p style="margin-top:8px">Source Code: <a href="https://github.com/MasterSid007/Incident-Threat-Detection-and-Response" target="_blank">github.com/MasterSid007/Incident-Threat-Detection-and-Response</a></p>
+  <p style="margin-top:4px">Built with Python · scikit-learn · Streamlit · Plotly · Docker</p>
+</div>
+
+</body>
+</html>

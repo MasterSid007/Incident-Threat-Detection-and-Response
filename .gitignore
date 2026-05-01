@@ -32,3 +32,5 @@ saved_models/*.pkl
 *.md
 !README.md
 !README_LANL.md
+!docs/
+!docs/**
