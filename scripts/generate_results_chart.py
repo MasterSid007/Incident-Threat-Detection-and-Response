@@ -11,7 +11,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 METRICS_PATH = ROOT / "docs" / "evaluation_metrics.json"
-OUTPUT_PATH = ROOT / "screenshots" / "results_comparison.png"
+OUTPUT_PATH = ROOT / "screenshots" / "comparison.png"
 
 
 def percent(value: float) -> float:
@@ -30,59 +30,89 @@ def main() -> None:
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-    plt.style.use("seaborn-v0_8-whitegrid")
-    fig, (ax_main, ax_fpr) = plt.subplots(
-        1,
-        2,
-        figsize=(13.5, 5.8),
-        gridspec_kw={"width_ratios": [3.2, 1]},
+    plt.rcParams.update(
+        {
+            "figure.facecolor": "#ffffff",
+            "axes.facecolor": "#ffffff",
+            "axes.edgecolor": "#d7dde8",
+            "axes.labelcolor": "#334155",
+            "xtick.color": "#475569",
+            "ytick.color": "#475569",
+            "font.family": "DejaVu Sans",
+            "font.size": 10,
+        }
     )
 
-    x = np.arange(len(metric_labels))
-    width = 0.23
-    colors = ["#2563eb", "#16a34a", "#7c3aed"]
+    fig, ax = plt.subplots(figsize=(12.5, 7.0))
+
+    metrics_to_plot = metric_labels + ["False Positive Rate"]
+    y = np.arange(len(metrics_to_plot))
+    height = 0.22
+    colors = {
+        "Rules-Only": "#64748b",
+        "ML Behavioral": "#16a34a",
+        "Combined": "#0ea5e9",
+    }
 
     for idx, approach in enumerate(approaches):
-        values = [percent(approach[key]) for key in good_metrics]
-        ax_main.bar(
-            x + (idx - 1) * width,
+        values = [percent(approach[key]) for key in good_metrics] + [percent(approach["fpr"])]
+        offset = (idx - 1) * height
+        bars = ax.barh(
+            y + offset,
             values,
-            width,
+            height,
             label=labels[idx],
-            color=colors[idx],
+            color=colors.get(labels[idx], "#334155"),
             edgecolor="none",
         )
+        ax.bar_label(bars, fmt="%.1f%%", fontsize=8, padding=4, color="#0f172a")
 
-    ax_main.set_title("Detection Performance: Rules vs ML vs Combined", weight="bold", pad=14)
-    ax_main.set_xticks(x)
-    ax_main.set_xticklabels(metric_labels)
-    ax_main.set_ylim(0, 105)
-    ax_main.set_ylabel("Score (%)")
-    ax_main.legend(loc="upper center", bbox_to_anchor=(0.5, -0.10), ncol=3, frameon=True)
-    ax_main.grid(axis="y", alpha=0.25)
-    ax_main.grid(axis="x", visible=False)
-
-    for container in ax_main.containers:
-        ax_main.bar_label(container, fmt="%.1f%%", fontsize=8, padding=2)
-
-    ax_fpr.bar(labels, fpr_values, color=colors, edgecolor="none")
-    ax_fpr.set_title("False Positive Rate", weight="bold", pad=14)
-    ax_fpr.set_ylim(0, 60)
-    ax_fpr.set_ylabel("FPR (%)")
-    ax_fpr.tick_params(axis="x", rotation=30)
-    ax_fpr.grid(axis="y", alpha=0.25)
-    ax_fpr.grid(axis="x", visible=False)
-
-    for container in ax_fpr.containers:
-        ax_fpr.bar_label(container, fmt="%.1f%%", fontsize=8, padding=2)
-
-    fig.suptitle(
-        "ML Behavioral Detection reached 95.4% accuracy and reduced FPR from 49.9% to 3.5%",
-        fontsize=13,
-        weight="bold",
-        y=1.03,
+    ax.set_title(
+        "Behavioral ML cuts false positives without sacrificing recall",
+        loc="left",
+        fontsize=17,
+        fontweight="bold",
+        color="#0f172a",
+        pad=18,
     )
-    fig.tight_layout(rect=[0, 0.04, 1, 1])
+    ax.text(
+        0,
+        1.02,
+        "Comparison on 200,000 RBA authentication events with a temporal train/test split",
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
+        fontsize=10,
+        color="#64748b",
+    )
+    ax.set_yticks(y)
+    ax.set_yticklabels(metrics_to_plot)
+    ax.invert_yaxis()
+    ax.set_xlim(0, 105)
+    ax.set_xlabel("Score (%)")
+    ax.grid(axis="x", color="#e2e8f0", linewidth=0.8)
+    ax.grid(axis="y", visible=False)
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    ax.legend(
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.18),
+        ncol=3,
+        frameon=False,
+        fontsize=10,
+    )
+
+    ax.axvline(3.5, color="#16a34a", linewidth=1, linestyle="--", alpha=0.35)
+    ax.annotate(
+        "ML FPR: 3.5%",
+        xy=(3.5, metrics_to_plot.index("False Positive Rate") - height),
+        xytext=(13, metrics_to_plot.index("False Positive Rate") - 0.48),
+        arrowprops=dict(arrowstyle="-", color="#16a34a", lw=1.2),
+        color="#166534",
+        fontsize=9,
+        ha="left",
+    )
+
+    fig.tight_layout(rect=[0, 0.05, 1, 1])
     fig.savefig(OUTPUT_PATH, dpi=180, bbox_inches="tight")
     print(f"Wrote {OUTPUT_PATH}")
 
