@@ -12,7 +12,7 @@ Behavioral ML detection engine for identity-based attacks in authentication logs
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ed?style=flat-square&logo=docker&logoColor=white)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE_ATT%26CK-Mapped-111827?style=flat-square)
 
-**Live Demo:** Streamlit Cloud deployment in progress. The URL will be added here after deployment.
+**Live Demo:** [Open the Streamlit SOC dashboard](https://incident-threat-detection-and-response-bmcxt7qdkgb88n2jrvmb9g.streamlit.app/)
 
 ## Why This Exists
 
@@ -177,7 +177,7 @@ For Streamlit Cloud, set the app entry point to:
 streamlit_app.py
 ```
 
-`streamlit_app.py` is a small wrapper around `ui/app.py`, which keeps the real dashboard code organized while giving Streamlit Cloud the conventional root app file. The root `requirements.txt` is pinned and ready for deployment. Since the RBA dataset is too large for normal repo-based Streamlit Cloud deployment, the hosted demo should use the built-in deterministic demo mode or load a small sampled dataset from a public URL at startup. The README Live Demo link should be updated after the Streamlit Cloud app is live.
+`streamlit_app.py` is a small wrapper around `ui/app.py`, which keeps the real dashboard code organized while giving Streamlit Cloud the conventional root app file. The root `requirements.txt` is pinned and ready for deployment. Since the RBA dataset is too large for normal repo-based Streamlit Cloud deployment, the hosted demo uses the built-in deterministic demo mode. A future production deployment could load a small sampled dataset from a public URL at startup.
 
 ## Citations
 
